@@ -154,6 +154,7 @@ void test_to_array(rbtree *t, const key_t *arr, const size_t n)
   {
     assert(arr[i] == res[i]);
   }
+  free(res);
 }
 
 void test_multi_instance()
@@ -187,6 +188,8 @@ void test_multi_instance()
     assert(arr2[i] == res2[i]);
   }
 
+  free(res1);
+  free(res2);
   delete_rbtree(t2);
   delete_rbtree(t1);
 }
@@ -344,6 +347,71 @@ void test_to_array_suite()
   delete_rbtree(t);
 }
 
+void test_find_erase(rbtree *t, const key_t *arr, const size_t n)
+{
+  for (int i = 0; i < n; i++)
+  {
+    node_t *p = rbtree_insert(t, arr[i]);
+    assert(p != NULL);
+  }
+
+  for (int i = 0; i < n; i++)
+  {
+    node_t *p = rbtree_find(t, arr[i]);
+    // printf("arr[%d] = %d\n", i, arr[i]);
+    assert(p != NULL);
+    assert(p->key == arr[i]);
+    rbtree_erase(t, p);
+  }
+
+  for (int i = 0; i < n; i++)
+  {
+    node_t *p = rbtree_find(t, arr[i]);
+    assert(p == NULL);
+  }
+
+  for (int i = 0; i < n; i++)
+  {
+    node_t *p = rbtree_insert(t, arr[i]);
+    assert(p != NULL);
+    node_t *q = rbtree_find(t, arr[i]);
+    assert(q != NULL);
+    assert(q->key == arr[i]);
+    assert(p == q);
+    rbtree_erase(t, p);
+    q = rbtree_find(t, arr[i]);
+    assert(q == NULL);
+  }
+}
+
+void test_find_erase_fixed()
+{
+  const key_t arr[] = {10, 5, 8, 34, 67, 23, 156, 24, 2, 12, 24, 36, 990, 25};
+  const size_t n = sizeof(arr) / sizeof(arr[0]);
+  rbtree *t = new_rbtree();
+  assert(t != NULL);
+
+  test_find_erase(t, arr, n);
+
+  delete_rbtree(t);
+}
+
+void test_find_erase_rand(const size_t n, const unsigned int seed)
+{
+  srand(seed);
+  rbtree *t = new_rbtree();
+  key_t *arr = calloc(n, sizeof(key_t));
+  for (int i = 0; i < n; i++)
+  {
+    arr[i] = rand();
+  }
+
+  test_find_erase(t, arr, n);
+
+  free(arr);
+  delete_rbtree(t);
+}
+
 int main(void)
 {
   test_init();
@@ -355,5 +423,6 @@ int main(void)
   test_distinct_values();
   test_duplicate_values();
   test_multi_instance();
+  test_find_erase_rand(1000000, 17);
   printf("Passed all tests!\n");
 }
