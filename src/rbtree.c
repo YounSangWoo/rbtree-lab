@@ -179,7 +179,7 @@ node_t *rbtree_insert(rbtree *t, const key_t key)
   //삽입이후 부모의 색상 비교
   rb_insert_fixup(t, z);
 
-  return t->root;
+  return z;
 }
 node_t *rbtree_find(const rbtree *t, const key_t key)
 {
